@@ -3,6 +3,7 @@ const app = express();
 const dotenv = require("dotenv");
 const nodemailer = require("nodemailer");
 const PORT = process.env.PORT || 3000;
+const emailList = require("./emailList.json");
 
 dotenv.config();
 
@@ -11,7 +12,7 @@ let transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.GMAIL_USER_EMAIL,
-    pass: process.env.GMAIL_USER_APP_PASSWORD,
+    pass: process.env.GMAIL_USER_PASSWORD,
   },
   tls: {
     rejectUnauthorized: false,
@@ -32,15 +33,20 @@ let transporter = nodemailer.createTransport({
 
 let mailOptions = {
   from: process.env.GMAIL_USER_EMAIL,
-  to: process.env.GMAIL_USER_EMAIL,
-  subject: "LOL Final Email Test - for real",
-  text: "Email sent using Node.js & Nodemailer",
+
+  // Emails from the emailList.json file
+  to: emailList,
+
+  subject: "Nice Nodemailer test",
+
+  // Html body
+  html: "<b>Hey there! </b> <br> This is our first message sent with Nodemailer. <br> <br> <b>Have a nice day!</b> <br> <br> <b>Best regards,</b> <br> <b>Team</b>, <br> <b>Company</b>",
 };
 
 transporter
   .sendMail(mailOptions)
   .then(function (res) {
-    console.log("Email sent successfully!", res);
+    console.log("Good news! Email has been sent successfully.", res);
   })
   .catch(function (err) {
     console.log(err);
