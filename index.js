@@ -18,7 +18,7 @@ let transporter = nodemailer.createTransport({
     rejectUnauthorized: false,
   },
 
-  // For Business Use - Gmail // NOT ACTIVE BY DEFAULT
+  // For Business Use // NOT ACTIVE BY DEFAULT
   // host: "smtp.gmail.com",
   // port: 3000,
   // secure: true, // use TLS
