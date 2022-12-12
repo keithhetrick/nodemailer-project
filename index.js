@@ -3,7 +3,7 @@ const app = express();
 const dotenv = require("dotenv");
 const nodemailer = require("nodemailer");
 const PORT = process.env.PORT || 3000;
-const emailList = require("./emailList.json");
+const addressBook = require("./addressBook.json");
 
 dotenv.config();
 
@@ -34,8 +34,8 @@ let transporter = nodemailer.createTransport({
 let mailOptions = {
   from: process.env.GMAIL_USER_EMAIL,
 
-  // Emails from the emailList.json file
-  to: emailList,
+  // Emails from the addressBook.json file
+  to: addressBook,
 
   subject: "Nice Nodemailer test",
 
