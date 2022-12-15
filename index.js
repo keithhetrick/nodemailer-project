@@ -32,10 +32,13 @@ let transporter = nodemailer.createTransport({
 });
 
 let mailOptions = {
+  // The email address of the sender
   from: process.env.GMAIL_USER_EMAIL,
 
   // Emails from the addressBook.json file
   to: addressBook,
+  // cc: addressBook,
+  // bcc: addressBook,
 
   subject: "Nice Nodemailer test",
 
