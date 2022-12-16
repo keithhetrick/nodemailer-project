@@ -48,6 +48,8 @@ let mailOptions = {
 
 transporter
   .sendMail(mailOptions)
+  // send individual emails to each address in the addressBook.json file
+  // .sendMail(addressBook.map((address) => ({ ...mailOptions, to: address })))
   .then(function (res) {
     console.log("Good news! Email has been sent successfully.", res);
   })
