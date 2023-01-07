@@ -1,11 +1,9 @@
 require("dotenv").config();
 
-const http = require("http");
 const express = require("express");
 const app = express();
 const nodemailer = require("nodemailer");
 const cron = require("node-cron");
-const hostname = "0.0.0.0";
 const PORT = process.env.PORT;
 const addressBook = require("./addressBook.json");
 const path = require("path");
@@ -128,17 +126,15 @@ cron.schedule("0 9 * * *", emailSender, {
 });
 
 // ======================================================== \\
-// PM2 CONFIGURATION
+// ================== EXPRESS SERVER ====================== ||
 // ======================================================== //
 
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "text/plain");
-  res.end("Hello World");
+app.get("/", (req, res) => {
+  res.send("Hello World!");
 });
 
-server.listen(PORT, hostname, () => {
-  console.log(`\nServer running at http://${hostname}:${PORT}/`);
+app.listen(PORT, () => {
+  console.log(`\nListening on port ${PORT}`);
 });
 
 // ======================================================== \\
