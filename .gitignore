@@ -103,6 +103,16 @@ dist
 # TernJS port file
 .tern-port
 
+# all pdf
+*.pdf
+
+# all images
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+
 # OTHER
 node_modules/
 coverage/
