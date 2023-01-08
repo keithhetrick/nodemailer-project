@@ -4,10 +4,42 @@ const express = require("express");
 const app = express();
 const nodemailer = require("nodemailer");
 const cron = require("node-cron");
-const PORT = process.env.PORT;
 const addressBook = require("./addressBook.json");
 const path = require("path");
 const fs = require("fs");
+
+// ENV variables
+const PORT = process.env.PORT;
+const GMAIL_USER_EMAIL = process.env.GMAIL_USER_EMAIL;
+const GMAIL_USER_PASSWORD = process.env.GMAIL_USER_PASSWORD;
+const BUSINESS_EMAIL_HOST = process.env.BUSINESS_EMAIL_HOST;
+const BUSINESS_EMAIL_PASSWORD = process.env.BUSINESS_EMAIL_PASSWORD;
+const LOCAL_DIRECTORY = process.env.LOCAL_DIRECTORY;
+
+// ======================================================== \\
+// ================== WATCHER LOGIC ======================= ||
+// ======================================================== //
+
+// executes emailSender() every time new file is added to LOCAL_DIRECTORY
+fs.watch(LOCAL_DIRECTORY, async (eventType, filename) => {
+  if (eventType === "change") {
+    console.log(
+      `\n\nNew file added: ${filename} - ${new Date().toLocaleString()}\n\n`
+    );
+    await emailSender();
+  }
+});
+
+// ======================================================== \\
+// ================== CRON SCHEDULER ====================== ||
+// ======================================================== //
+
+// NOT NEEDED - using fs.watch() instead
+
+// cron.schedule("0 */12 * * *", emailSender, {
+//   scheduled: true,
+//   timezone: "America/Chicago",
+// });
 
 // ======================================================== \\
 // ================== EMAIL CONFIGURATION ================= ||
@@ -18,8 +50,8 @@ async function emailSender() {
   let transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: process.env.GMAIL_USER_EMAIL,
-      pass: process.env.GMAIL_USER_PASSWORD,
+      user: GMAIL_USER_EMAIL,
+      pass: GMAIL_USER_PASSWORD,
     },
     tls: {
       rejectUnauthorized: false,
@@ -33,8 +65,8 @@ async function emailSender() {
     // port: 3000,
     // secure: true, // use TLS
     // auth: {
-    // user: process.env.BUSINESS_EMAIL_HOST,
-    // pass: process.env.BUSINESS_EMAIL_PASSWORD,
+    // user: BUSINESS_EMAIL_HOST,
+    // pass: BUSINESS_EMAIL_PASSWORD,
     // },
     // tls: {
     //   rejectUnauthorized: false,
@@ -45,8 +77,8 @@ async function emailSender() {
   // ================== ATTACHMENTS LOGIC =================== ||
   // ======================================================== //
 
-  const files = fs.readdirSync("../web-scraper-test-2");
-  const folder_Path = "../web-scraper-test-2";
+  const files = fs.readdirSync(LOCAL_DIRECTORY);
+  const folder_Path = LOCAL_DIRECTORY;
 
   const attachments = files.map((file) => {
     return {
@@ -62,12 +94,14 @@ async function emailSender() {
 
   console.log("\nrunning daily task\n");
   console.log("Sending emails to...", addressBook, "\n");
+
   // Send email to each recipient in addressBook.json
   addressBook.forEach((recipient) => {
     const mailOptions = {
-      from: process.env.GMAIL_USER_EMAIL,
+      from: GMAIL_USER_EMAIL,
       to: recipient,
       subject: `Daily Job Scrap - ${new Date().toLocaleString()}.pdf`,
+
       // add all files in folder to attachments array
       attachments: attachments,
       text:
@@ -111,19 +145,6 @@ async function emailSender() {
   });
   transporter.close();
 }
-
-// ======================================================== \\
-// ================== CRON SCHEDULER ====================== ||
-// ======================================================== //
-
-// cron.schedule("*/10 * * * *", async () => {
-//   await emailSender();
-// });
-
-cron.schedule("0 */12 * * *", emailSender, {
-  scheduled: true,
-  timezone: "America/Chicago",
-});
 
 // ======================================================== \\
 // ================== EXPRESS SERVER ====================== ||
