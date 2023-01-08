@@ -120,7 +120,7 @@ async function emailSender() {
 //   await emailSender();
 // });
 
-cron.schedule("0 9 * * *", emailSender, {
+cron.schedule("0 */12 * * *", emailSender, {
   scheduled: true,
   timezone: "America/Chicago",
 });
