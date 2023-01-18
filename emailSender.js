@@ -8,6 +8,9 @@ const addressBook = require("./addressBook.json");
 const path = require("path");
 const fs = require("fs");
 
+// chalk for console.log() styling
+const chalk = require("chalk");
+
 // ENV variables
 const PORT = process.env.PORT;
 const GMAIL_USER_EMAIL = process.env.GMAIL_USER_EMAIL;
@@ -29,6 +32,13 @@ fs.watch(LOCAL_DIRECTORY, async (eventType, filename) => {
     await emailSender();
   }
 });
+
+console.log(
+  "\n========================================\n",
+  chalk.yellow.italic(`\nWATCHING FOR NEW FILES IN DIRECTORY:\n`) +
+    chalk.red(`${LOCAL_DIRECTORY}\n`),
+  "\n========================================\n"
+);
 
 // ======================================================== \\
 // ================== CRON SCHEDULER ====================== ||
@@ -83,7 +93,8 @@ async function emailSender() {
   const attachments = files.map((file) => {
     return {
       filename: file,
-      path: path.join(__dirname, folder_Path, file),
+      path: path.join(folder_Path, file),
+      contentType: "application/pdf",
     };
   });
   console.log("ATTACHMENTS: ", attachments);
@@ -92,7 +103,9 @@ async function emailSender() {
   // ================== EMAIL SCHEDULER ===================== ||
   // ======================================================== //
 
-  console.log("\nrunning daily task\n");
+  console.log(
+    chalk.yellow(`\nRunning daily task at: ${new Date().toLocaleString()} \n`)
+  );
   console.log("Sending emails to...", addressBook, "\n");
 
   // Send email to each recipient in addressBook.json
@@ -101,7 +114,6 @@ async function emailSender() {
       from: GMAIL_USER_EMAIL,
       to: recipient,
       subject: `Daily Job Scrap - ${new Date().toLocaleString()}.pdf`,
-
       // add all files in folder to attachments array
       attachments: attachments,
       text:
@@ -121,7 +133,9 @@ async function emailSender() {
         console.log(err);
       } else {
         console.log(
-          `\n\n${new Date().toLocaleString()} - Good news! Email has been sent successfully to: ${recipient} \n\n`,
+          `\n\n${new Date().toLocaleString()} - ` +
+            chalk.redBright.italic("Good news!") +
+            ` Email has been sent successfully to: ${recipient} \n\n`,
           mailOptions.subject,
           mailOptions.attachments,
           // desructure the response object
@@ -156,7 +170,14 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(
-    `\n ======================================== \n\nYooo! Listening on port ${PORT}. Lets gettit! \n\n ========================================`
+    chalk.green(
+      "\n ======================================== \n\nYooo! Listening on port " +
+        chalk.black.bgYellowBright(`${PORT}`) +
+        ". Let's " +
+        chalk.redBright.italic(
+          "gettit 🚀 \n\n ========================================"
+        )
+    )
   );
 });
 
@@ -187,12 +208,12 @@ process.on("SIGINT", (signal) => {
   process.exit(0);
 });
 
-// process.on("uncaughtException", (err) => {
-//   console.log(`Uncaught Exception: ${err.message}`);
-//   process.exit(1);
-// });
+process.on("uncaughtException", (err) => {
+  console.log(`Uncaught Exception: ${err.message}`);
+  process.exit(1);
+});
 
-// process.on("unhandledRejection", (reason, promise) => {
-//   console.log("Unhandled rejection at ", promise, `reason: ${err.message}`);
-//   process.exit(1);
-// });
+process.on("unhandledRejection", (reason, promise) => {
+  console.log("Unhandled rejection at ", promise, `reason: ${err.message}`);
+  process.exit(1);
+});
