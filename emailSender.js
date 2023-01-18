@@ -155,7 +155,9 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\nListening on port ${PORT}`);
+  console.log(
+    `\n ======================================== \n\nYooo! Listening on port ${PORT}. Lets gettit! \n\n ========================================`
+  );
 });
 
 // ======================================================== \\
