@@ -46,10 +46,10 @@ console.log(
 
 // NOT NEEDED - using fs.watch() instead
 
-// cron.schedule("0 */12 * * *", emailSender, {
-//   scheduled: true,
-//   timezone: "America/Chicago",
-// });
+cron.schedule("*/30 * * * *", emailSender, {
+  scheduled: true,
+  timezone: "America/Chicago",
+});
 
 // ======================================================== \\
 // ================== EMAIL CONFIGURATION ================= ||
