@@ -23,13 +23,10 @@ const LOCAL_DIRECTORY = process.env.LOCAL_DIRECTORY;
 // ================== WATCHER LOGIC ======================= ||
 // ======================================================== //
 
-// executes emailSender() every time new file is added to LOCAL_DIRECTORY
-fs.watch(LOCAL_DIRECTORY, async (eventType, filename) => {
+// executes emailJobSender() every time new file is added to LOCAL_DIRECTORY
+fs.watch(LOCAL_DIRECTORY, (eventType, filename) => {
   if (eventType === "change") {
-    console.log(
-      `\n\nNew file added: ${filename} - ${new Date().toLocaleString()}\n\n`
-    );
-    await emailSender();
+    emailJobSender();
   }
 });
 
@@ -37,16 +34,22 @@ console.log(
   "\n========================================\n",
   chalk.yellow.italic(`\nWATCHING FOR NEW FILES IN DIRECTORY:\n`) +
     chalk.red(`${LOCAL_DIRECTORY}\n`),
-  "\n========================================\n"
+  "\n========================================"
 );
 
 // ======================================================== \\
 // ================== CRON SCHEDULER ====================== ||
 // ======================================================== //
 
-// NOT NEEDED - using fs.watch() instead
+// cron job that executes emailJobSender() every day at 8am -> // NOT NEEDED - using fs.watch() instead
 
-cron.schedule("0 8 * * *", emailSender, {
+// cron.schedule("0 8 * * *", emailJobSender, {
+// scheduled: true,
+// timezone: "America/Chicago",
+// });
+
+// cron job that executes emailDeletionConfirmation() every Monday, Wednesday & Friday at 8:01am
+cron.schedule("1 8 * * 1,3,5", emailDeletionConfirmation, {
   scheduled: true,
   timezone: "America/Chicago",
 });
@@ -55,7 +58,7 @@ cron.schedule("0 8 * * *", emailSender, {
 // ================== EMAIL CONFIGURATION ================= ||
 // ======================================================== //
 
-async function emailSender() {
+async function emailJobSender() {
   // For Personal Use
   let transporter = nodemailer.createTransport({
     service: "gmail",
@@ -97,14 +100,16 @@ async function emailSender() {
       contentType: "application/pdf",
     };
   });
-  console.log("ATTACHMENTS: ", attachments);
+  console.log("\nATTACHMENTS: ", attachments);
 
   // ======================================================== \\
   // ================== EMAIL SCHEDULER ===================== ||
   // ======================================================== //
 
   console.log(
-    chalk.yellow(`\nRunning daily task at: ${new Date().toLocaleString()} \n`)
+    chalk.yellow(
+      `\nRunning daily task (Send email) at: ${new Date().toLocaleString()} \n`
+    )
   );
   console.log("Sending emails to...", addressBook, "\n");
 
@@ -134,11 +139,12 @@ async function emailSender() {
       } else {
         console.log(
           `\n\n${new Date().toLocaleString()} - ` +
-            chalk.redBright.italic("Good news!") +
-            ` Email has been sent successfully to: ${recipient} \n\n`,
+            chalk.redBright.bold.italic("Good news!") +
+            ` Email has been sent successfully to: ` +
+            chalk.redBright.italic(`${recipient} \n\n`),
           mailOptions.subject,
           mailOptions.attachments,
-          // desructure the response object
+          // destructure the response object
           {
             messageId: res.messageId,
             envelope: res.envelope,
@@ -156,6 +162,52 @@ async function emailSender() {
         );
       }
     });
+  });
+  transporter.close();
+}
+
+// send an email to the host confirming the deletion of the files from the directory
+async function emailDeletionConfirmation() {
+  // For Personal Use
+  let transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: GMAIL_USER_EMAIL,
+      pass: GMAIL_USER_PASSWORD,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  const mailOptions = {
+    from: GMAIL_USER_EMAIL,
+    to: GMAIL_USER_EMAIL,
+    subject: `Daily Job Scrap Deletion - ${new Date().toLocaleString()}`,
+    text:
+      `Hello ${GMAIL_USER_EMAIL},` +
+      "\n\n" +
+      `This is an automated email sent from Node.js, NodeMailer, and Cron. This is a confirmation that the files in directory ${LOCAL_DIRECTORY} have been deleted at ${new Date().toLocaleString()}.` +
+      "\n\n" +
+      "Thank you for using this app! I hope you find it useful. \n" +
+      "Keep learning, and keep on keeping on👌👌 \n\n" +
+      "Best regards," +
+      "\n\nYour friendly neighborhood EMAIL NODE CRON APP",
+  };
+
+  transporter.sendMail(mailOptions, (err, res) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(
+        `\n\n${new Date().toLocaleString()} - ` +
+          chalk.redBright.bold.italic("Good news!") +
+          ` Email has been sent successfully to: ` +
+          chalk.redBright.italic(`${GMAIL_USER_EMAIL}, \n\n`),
+        mailOptions.subject,
+        `confirming files ${LOCAL_DIRECTORY} have been deleted.\n`
+      );
+    }
   });
   transporter.close();
 }
