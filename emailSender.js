@@ -25,7 +25,14 @@ const LOCAL_DIRECTORY = process.env.LOCAL_DIRECTORY;
 
 // executes emailJobSender() every time new file is added to LOCAL_DIRECTORY
 fs.watch(LOCAL_DIRECTORY, (eventType, filename) => {
-  if (eventType === "change") {
+  if (filename) {
+    console.log(
+      "\n\n========================================\n",
+      chalk.yellow.italic(`\nFILE: ${filename} was '${eventType}' in `) +
+        chalk.red(`${LOCAL_DIRECTORY}`) +
+        chalk.yellow.italic(" folder \n"),
+      "\n========================================\n\n"
+    );
     emailJobSender();
   }
 });
